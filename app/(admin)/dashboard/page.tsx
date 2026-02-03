@@ -4,12 +4,13 @@ import { supabase } from '../../../lib/supabase'
 import { useRouter } from 'next/navigation'
 import { Session } from '@supabase/supabase-js'
 import AdminCalendar from '../../../components/AdminCalendar'
-import { Search, MapPin, Phone, Mail, LogOut } from "lucide-react"
+import { Search, MapPin, Phone, Mail, LogOut, AlertCircle } from "lucide-react"
 
 export default function DashboardPage() {
   const [tickets, setTickets] = useState<any[]>([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const router = useRouter()
 
@@ -29,8 +30,29 @@ export default function DashboardPage() {
   }, [])
 
   async function fetchTickets() {
-    const { data } = await supabase.from('tickets').select('*').eq('status', 'nouveau').order('created_at', { ascending: false })
-    if (data) setTickets(data)
+    try {
+      setError(null);
+      const { data, error: supabaseError } = await supabase
+        .from('tickets')
+        .select('*')
+        .eq('status', 'nouveau')
+        .order('created_at', { ascending: false })
+      
+      if (supabaseError) {
+        console.error('Erreur lors du chargement des tickets:', supabaseError)
+        setError('Impossible de charger les tickets. Veuillez rafraîchir la page.')
+        setTickets([])
+        return
+      }
+      
+      if (data) {
+        setTickets(data)
+      }
+    } catch (err) {
+      console.error('Erreur inattendue:', err)
+      setError('Une erreur inattendue s\'est produite. Veuillez réessayer.')
+      setTickets([])
+    }
   }
 
   const handleLogout = async () => {
@@ -48,6 +70,21 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-[#1A2E44] text-white p-4 md:p-8 font-sans">
       <div className="max-w-[98%] mx-auto">
+        {error && (
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-start gap-3">
+            <AlertCircle className="text-red-400 flex-shrink-0 mt-0.5" size={20} />
+            <div>
+              <p className="text-red-400 font-bold">Erreur</p>
+              <p className="text-red-300 text-sm">{error}</p>
+              <button 
+                onClick={fetchTickets}
+                className="mt-2 text-red-400 hover:text-red-300 font-bold text-sm underline"
+              >
+                Réessayer
+              </button>
+            </div>
+          </div>
+        )}
         <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
           <h1 className="text-4xl font-black italic uppercase tracking-tighter">ADMIN <span className="text-[#00D4FF]">CONSOLE</span></h1>
           <div className="flex gap-4 w-full md:w-auto">

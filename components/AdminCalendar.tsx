@@ -1,35 +1,48 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import interactionPlugin, { Draggable } from '@fullcalendar/interaction'
 import { supabase } from '../lib/supabase'
 
 export default function AdminCalendar() {
   const [events, setEvents] = useState([])
+  const draggedElementRef = useRef(null)
+  const calendarRef = useRef(null)
 
   useEffect(() => {
     fetchEvents()
-    let draggableEl = document.getElementById('external-events')
-    if (draggableEl) {
-      new Draggable(draggableEl, {
-        itemSelector: '.fc-event-ticket',
-        eventData: (eventEl) => ({
-          title: eventEl.getAttribute('title'),
-          duration: '01:30',
-          extendedProps: { 
-            ticketId: eventEl.getAttribute('data-id'),
-            city: eventEl.getAttribute('data-city'),
-            phone: eventEl.getAttribute('data-phone'),
-            email: eventEl.getAttribute('data-email'),
-            service: eventEl.getAttribute('data-service'),
-            description: eventEl.getAttribute('data-desc')
-          }
-        })
-      })
+    setupExternalDragListeners()
+    
+    return () => {
+      // Cleanup event listeners
+      const externalEvents = document.getElementById('external-events')
+      if (externalEvents) {
+        externalEvents.removeEventListener('dragstart', handleDragStart)
+        externalEvents.removeEventListener('dragend', handleDragEnd)
+      }
     }
   }, [])
+
+  const handleDragStart = (e) => {
+    if (e.target.classList.contains('fc-event-ticket')) {
+      draggedElementRef.current = e.target
+      e.dataTransfer.effectAllowed = 'move'
+      e.dataTransfer.setData('text/html', e.target.innerHTML)
+    }
+  }
+
+  const handleDragEnd = () => {
+    draggedElementRef.current = null
+  }
+
+  const setupExternalDragListeners = () => {
+    const externalEvents = document.getElementById('external-events')
+    if (externalEvents) {
+      externalEvents.addEventListener('dragstart', handleDragStart)
+      externalEvents.addEventListener('dragend', handleDragEnd)
+    }
+  }
 
   async function fetchEvents() {
     const { data, error } = await supabase.from('appointments').select('*, tickets(*)').order('start_time', { ascending: true })
@@ -109,7 +122,9 @@ export default function AdminCalendar() {
   };
 
   const handleDrop = async (info) => {
-    const el = info.draggedEl;
+    const el = draggedElementRef.current
+    if (!el) return
+    
     const { error } = await supabase.from('appointments').insert([{
       ticket_id: el.getAttribute('data-id'),
       title: el.getAttribute('title'),
@@ -129,7 +144,8 @@ export default function AdminCalendar() {
     }
   };
 
-  const handleUpdatePos = async (info) => {
+  const handleEventChange = async (info) => {
+    // Appelé quand un événement calendrier est modifié (déplacement, redimensionnement)
     await supabase.from('appointments').update({
       start_time: info.event.startStr,
       end_time: info.event.endStr
@@ -144,7 +160,7 @@ export default function AdminCalendar() {
         .fc-timegrid-event { min-height: 90px !important; }
       `}</style>
       <FullCalendar
-        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+        plugins={[dayGridPlugin, timeGridPlugin]}
         initialView="timeGridWeek"
         events={events}
         locale="fr"
@@ -153,9 +169,7 @@ export default function AdminCalendar() {
         droppable={true}
         eventContent={renderEventContent}
         eventClick={handleEventClick}
-        eventDrop={handleUpdatePos}
-        eventResize={handleUpdatePos}
-        drop={handleDrop}
+        eventChange={handleEventChange}
         headerToolbar={{ left: 'prev,next today', center: 'title', right: 'timeGridWeek,dayGridMonth' }}
       />
     </div>

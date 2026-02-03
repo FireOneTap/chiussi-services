@@ -1,0 +1,68 @@
+'use client'
+import { useEffect, useState } from 'react'
+import { supabase } from '../../../lib/supabase'
+import { useRouter } from 'next/navigation'
+import AdminCalendar from '../../../components/AdminCalendar'
+import { Search, MapPin, Phone, Mail, FileText } from "lucide-react"
+
+export default function DashboardPage() {
+  const [tickets, setTickets] = useState([])
+  const [search, setSearch] = useState('')
+  const router = useRouter()
+
+  async function fetchTickets() {
+    const { data } = await supabase.from('tickets').select('*').eq('status', 'nouveau').order('created_at', { ascending: false })
+    if (data) setTickets(data)
+  }
+
+  useEffect(() => {
+    fetchTickets()
+    window.addEventListener('ticket-planned', fetchTickets)
+    return () => window.removeEventListener('ticket-planned', fetchTickets)
+  }, [])
+
+  const filtered = tickets.filter(t => 
+    t.full_name?.toLowerCase().includes(search.toLowerCase()) || 
+    t.city?.toLowerCase().includes(search.toLowerCase())
+  )
+
+  return (
+    <div className="min-h-screen bg-[#1A2E44] text-white p-4 md:p-8 font-sans">
+      <div className="max-w-[98%] mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+          <h1 className="text-4xl font-black italic uppercase tracking-tighter">ADMIN <span className="text-[#00D4FF]">CONSOLE</span></h1>
+          <div className="relative w-full md:w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 opacity-20" size={18}/>
+            <input 
+              className="bg-white/5 border border-white/10 rounded-2xl pl-10 pr-4 py-3 w-full focus:border-[#00D4FF] outline-none transition-all"
+              placeholder="Rechercher un client..."
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div id="external-events" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-16">
+          {filtered.map(t => (
+            <div key={t.id} 
+                 data-id={t.id} title={t.full_name} data-city={t.city} data-phone={t.phone} 
+                 data-email={t.email} data-service={t.service_type} data-desc={t.description}
+                 className="fc-event-ticket bg-white/5 border border-white/10 p-4 rounded-2xl cursor-grab border-l-4 border-l-[#00D4FF] hover:bg-white/10 transition-all flex flex-col gap-2">
+              <div className="flex justify-between items-center">
+                <span className="text-[9px] font-black bg-[#00D4FF] text-[#1A2E44] px-2 py-0.5 rounded uppercase">{t.service_type}</span>
+                <span className="text-[10px] font-bold opacity-40 uppercase flex items-center gap-1"><MapPin size={10}/> {t.city}</span>
+              </div>
+              <h3 className="font-black uppercase text-lg leading-none tracking-tight">{t.full_name}</h3>
+              <p className="text-[11px] opacity-60 italic line-clamp-2 border-l border-white/10 pl-2">{t.description}</p>
+              <div className="mt-2 pt-2 border-t border-white/5 space-y-1">
+                <div className="flex items-center gap-2 text-[10px] font-bold"><Phone size={12} className="text-[#00D4FF]"/> {t.phone}</div>
+                <div className="flex items-center gap-2 text-[10px] opacity-40"><Mail size={12}/> {t.email}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <AdminCalendar />
+      </div>
+    </div>
+  )
+}

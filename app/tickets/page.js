@@ -1,5 +1,5 @@
 ﻿'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { 
   Send, ChevronLeft, Laptop, Building2, FileText, 
@@ -12,6 +12,7 @@ export default function TicketsPage() {
   const [isSending, setIsSending] = useState(false)
   const [isSent, setIsSent] = useState(false)
   const [error, setError] = useState(null)
+  const [csrfToken, setCSRFToken] = useState(null)
 
   // États pour les données du formulaire
   const [formData, setFormData] = useState({
@@ -22,6 +23,25 @@ export default function TicketsPage() {
     description: ''
   })
 
+  // Récupérer le token CSRF au chargement de la page
+  const fetchCSRFToken = async () => {
+    try {
+      const response = await fetch('/api/csrf-token')
+      const data = await response.json()
+      if (data.token) {
+        setCSRFToken(data.token)
+      }
+    } catch (err) {
+      console.error('Erreur récupération token CSRF:', err)
+      setError('Erreur de sécurité. Veuillez recharger la page.')
+    }
+  }
+
+  // Appeler fetchCSRFToken au montage du composant
+  useEffect(() => {
+    fetchCSRFToken()
+  }, [])
+
   const toggleDark = () => setDarkMode(!darkMode)
 
   const handleChange = (e) => {
@@ -30,15 +50,23 @@ export default function TicketsPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    // Vérifier que le token CSRF est disponible
+    if (!csrfToken) {
+      setError('Erreur de sécurité. Veuillez recharger la page et réessayer.')
+      return
+    }
+
     setIsSending(true)
     setError(null)
 
     try {
-      // Appeler l'API de validation server-side
+      // Appeler l'API de validation server-side avec le token CSRF
       const response = await fetch('/api/tickets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          csrfToken: csrfToken,
           service_type: service,
           full_name: formData.full_name,
           email: formData.email,

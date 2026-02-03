@@ -1,5 +1,44 @@
 ﻿import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import crypto from 'crypto';
+
+/**
+ * Valide un token CSRF
+ * @param {string} token - Token à valider
+ * @param {number} maxAge - Âge maximum du token en secondes (défaut: 24h)
+ * @returns {object} {valid: boolean, error?: string}
+ */
+function validateCSRFToken(token, maxAge = 86400) {
+  try {
+    if (!token || typeof token !== 'string') {
+      return { valid: false, error: 'Token CSRF manquant ou invalide' };
+    }
+
+    // Décoder le token
+    const buffer = Buffer.from(token, 'base64');
+    if (buffer.length !== 36) {
+      return { valid: false, error: 'Format de token invalide' };
+    }
+
+    // Extraire le timestamp (4 derniers bytes)
+    const timestamp = buffer.readUInt32BE(32);
+    const now = Math.floor(Date.now() / 1000);
+    const age = now - timestamp;
+
+    // Vérifier que le token n'est pas expiré
+    if (age > maxAge) {
+      return { valid: false, error: 'Token CSRF expiré' };
+    }
+
+    if (age < 0) {
+      return { valid: false, error: 'Token CSRF invalide' };
+    }
+
+    return { valid: true };
+  } catch (err) {
+    return { valid: false, error: 'Erreur lors de la validation du token' };
+  }
+}
 
 // Validation schemas
 const VALIDATION_RULES = {
@@ -131,6 +170,16 @@ export async function POST(request) {
       return NextResponse.json(
         { error: 'Requête invalide : JSON malformé' },
         { status: 400 }
+      );
+    }
+
+    // Vérifier le token CSRF
+    const csrfToken = body.csrfToken;
+    const csrfValidation = validateCSRFToken(csrfToken);
+    if (!csrfValidation.valid) {
+      return NextResponse.json(
+        { error: 'Erreur de sécurité. Veuillez recharger la page et réessayer.' },
+        { status: 403 }
       );
     }
 

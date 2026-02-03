@@ -1,17 +1,10 @@
 ﻿'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@supabase/supabase-js'
 import { 
   Send, ChevronLeft, Laptop, Building2, FileText, 
   User, Mail, Phone, MessageSquare, Sun, Moon, MapPin, CheckCircle, AlertCircle
 } from "lucide-react"
-
-// Initialisation du client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
 
 export default function TicketsPage() {
   const [darkMode, setDarkMode] = useState(false)
@@ -41,23 +34,39 @@ export default function TicketsPage() {
     setError(null)
 
     try {
-      const { error: sbError } = await supabase
-        .from('tickets')
-        .insert([{
+      // Appeler l'API de validation server-side
+      const response = await fetch('/api/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           service_type: service,
           full_name: formData.full_name,
           email: formData.email,
           phone: formData.phone,
           city: formData.city,
-          description: formData.description,
-          status: 'nouveau'
-        }])
+          description: formData.description
+        })
+      })
 
-      if (sbError) throw sbError
+      const result = await response.json()
+
+      if (!response.ok) {
+        // Erreur de validation ou serveur
+        if (result.errors) {
+          // Afficher les erreurs de validation
+          const errorMessages = Object.values(result.errors).join('\n')
+          setError(errorMessages)
+        } else {
+          setError(result.error || 'Une erreur est survenue. Veuillez réessayer.')
+        }
+        return
+      }
+
+      // Succès
       setIsSent(true)
     } catch (err) {
-      alert("Erreur Supabase : " + err.message + " | " + err.details)
-      setError("Désolé, une erreur est survenue. Vérifiez votre connexion ou contactez-moi par téléphone.")
+      console.error('Erreur:', err)
+      setError('Erreur de connexion. Veuillez vérifier votre connexion internet et réessayer.')
     } finally {
       setIsSending(false)
     }

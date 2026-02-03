@@ -8,6 +8,7 @@ import {
 
 export default function TicketsPage() {
   const [darkMode, setDarkMode] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [service, setService] = useState('Particulier')
   const [isSending, setIsSending] = useState(false)
   const [isSent, setIsSent] = useState(false)
@@ -40,19 +41,25 @@ export default function TicketsPage() {
 
   // Appeler fetchCSRFToken au montage du composant
   useEffect(() => {
-    fetchCSRFToken()
-    
     // Lire le dark mode depuis localStorage au montage
     const savedDarkMode = localStorage.getItem('chiussi-darkMode')
     if (savedDarkMode !== null) {
       setDarkMode(JSON.parse(savedDarkMode))
     }
+    
+    // Marquer le composant comme monté (hydraté)
+    setMounted(true)
+    
+    // Récupérer le CSRF token
+    fetchCSRFToken()
   }, [])
 
-  // Sauvegarder le dark mode dans localStorage quand il change
+  // Sauvegarder le dark mode dans localStorage quand il change (seulement après hydratation)
   useEffect(() => {
-    localStorage.setItem('chiussi-darkMode', JSON.stringify(darkMode))
-  }, [darkMode])
+    if (mounted) {
+      localStorage.setItem('chiussi-darkMode', JSON.stringify(darkMode))
+    }
+  }, [darkMode, mounted])
   const getFieldError = (name, value) => {
     const trimmed = String(value).trim()
     

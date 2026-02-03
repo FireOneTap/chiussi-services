@@ -1,16 +1,35 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction'
-import { supabase } from '../lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 
-export default function AdminCalendar() {
+export default function AdminCalendar({ session }) {
   const [events, setEvents] = useState([])
+  const supabaseRef = useRef(null)
 
   useEffect(() => {
-    fetchEvents()
+    // Créer et authentifier le client Supabase une seule fois
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        auth: {
+          persistSession: false,
+        }
+      }
+    )
+    
+    // Utiliser le token de session pour les requêtes
+    if (session?.access_token) {
+      supabase.auth.setSession(session)
+    }
+    
+    supabaseRef.current = supabase
+    fetchEvents(supabase)
+    
     let draggableEl = document.getElementById('external-events')
     if (draggableEl) {
       new Draggable(draggableEl, {
@@ -29,11 +48,14 @@ export default function AdminCalendar() {
         })
       })
     }
-  }, [])
+  }, [session])
 
-  async function fetchEvents() {
+  async function fetchEvents(supabase) {
     const { data, error } = await supabase.from('appointments').select('*, tickets(*)').order('start_time', { ascending: true })
-    if (error) return;
+    if (error) {
+      console.error('Erreur Supabase appointments:', error);
+      return;
+    }
     
     setEvents(data.map(app => {
       // MODE MIROIR : On prend les infos du ticket en priorité, sinon celles de l'appli
@@ -72,20 +94,20 @@ export default function AdminCalendar() {
 
     if (action.toUpperCase() === 'OK') {
       const next = p.status === 'termine' ? 'prevu' : 'termine';
-      await supabase.from('appointments').update({ status: next }).eq('id', info.event.id);
+      await supabaseRef.current.from('appointments').update({ status: next }).eq('id', info.event.id);
     } else if (action.toUpperCase() === 'SUP') {
       if (confirm("Supprimer ce rendez-vous ?")) {
-        await supabase.from('appointments').delete().eq('id', info.event.id);
+        await supabaseRef.current.from('appointments').delete().eq('id', info.event.id);
       }
     } else if (action.toUpperCase() === 'MOD') {
       const newD = window.prompt("Nouvelle description :", p.description);
       if (newD !== null) {
         // On met à jour l'appointment ET le ticket pour garder le miroir
-        await supabase.from('appointments').update({ description: newD }).eq('id', info.event.id);
-        if (p.ticketId) await supabase.from('tickets').update({ description: newD }).eq('id', p.ticketId);
+        await supabaseRef.current.from('appointments').update({ description: newD }).eq('id', info.event.id);
+        if (p.ticketId) await supabaseRef.current.from('tickets').update({ description: newD }).eq('id', p.ticketId);
       }
     }
-    fetchEvents();
+    fetchEvents(supabaseRef.current);
   };
 
   const renderEventContent = (eventInfo) => {
@@ -110,7 +132,7 @@ export default function AdminCalendar() {
 
   const handleDrop = async (info) => {
     const el = info.draggedEl;
-    const { error } = await supabase.from('appointments').insert([{
+    const { error } = await supabaseRef.current.from('appointments').insert([{
       ticket_id: el.getAttribute('data-id'),
       title: el.getAttribute('title'),
       city: el.getAttribute('data-city'),
@@ -123,14 +145,14 @@ export default function AdminCalendar() {
       status: 'prevu'
     }]);
     if (!error) {
-      await supabase.from('tickets').update({ status: 'planifié' }).eq('id', el.getAttribute('data-id'));
-      fetchEvents();
+      await supabaseRef.current.from('tickets').update({ status: 'planifié' }).eq('id', el.getAttribute('data-id'));
+      fetchEvents(supabaseRef.current);
       window.dispatchEvent(new Event('ticket-planned'));
     }
   };
 
   const handleUpdatePos = async (info) => {
-    await supabase.from('appointments').update({
+    await supabaseRef.current.from('appointments').update({
       start_time: info.event.startStr,
       end_time: info.event.endStr
     }).eq('id', info.event.id);

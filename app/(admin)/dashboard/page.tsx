@@ -9,6 +9,7 @@ export default function DashboardPage() {
   const [tickets, setTickets] = useState([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  const [session, setSession] = useState(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -17,6 +18,7 @@ export default function DashboardPage() {
       if (!session) {
         router.push('/login')
       } else {
+        setSession(session)
         fetchTickets()
         setLoading(false)
       }
@@ -85,7 +87,7 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        <AdminCalendar />
+        <AdminCalendar session={session} />
       </div>
     </div>
   )

@@ -2,6 +2,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { validateCSRFToken } from '../../../lib/csrf.js';
 import { error as logError, info as logInfo, warn as logWarn } from '../../../lib/logger.js';
+import { checkRateLimit, getClientIP } from '../../../lib/rate-limit.js';
 
 // Validation schemas
 const VALIDATION_RULES = {
@@ -116,7 +117,29 @@ function validateFormData(body) {
 
 export async function POST(request) {
   try {
+    // Vérifier le rate limiting
+    const ip = getClientIP(request);
+    const { allowed, remaining, resetTime } = checkRateLimit(ip);
+    
+    if (!allowed) {
+      const retryAfter = Math.ceil((resetTime - Date.now()) / 1000);
+      logWarn('Rate limit exceeded', { ip, retryAfter });
+      return NextResponse.json(
+        { error: 'Trop de requêtes. Veuillez réessayer dans quelques instants.' },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': '5',
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': String(Math.ceil(resetTime / 1000)),
+            'Retry-After': String(retryAfter),
+          }
+        }
+      );
+    }
+
     // Vérifier le Content-Type
+
     const contentType = request.headers.get('content-type');
     if (!contentType?.includes('application/json')) {
       return NextResponse.json(

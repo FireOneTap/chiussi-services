@@ -1,6 +1,7 @@
 ﻿import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { validateCSRFToken } from '../../../lib/csrf.js';
+import { error as logError, info as logInfo, warn as logWarn } from '../../../lib/logger.js';
 
 // Validation schemas
 const VALIDATION_RULES = {
@@ -165,7 +166,7 @@ export async function POST(request) {
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
-      console.error('Erreur serveur : Configuration Supabase manquante');
+      logError('Erreur serveur : Configuration Supabase manquante');
       return NextResponse.json(
         { error: 'Erreur serveur. Veuillez réessayer plus tard.' },
         { status: 500 }
@@ -182,7 +183,7 @@ export async function POST(request) {
 
     if (error) {
       // Logger l'erreur réelle côté serveur (ne pas la révéler au client)
-      console.error('Erreur Supabase:', {
+      logError('Erreur Supabase lors de l\'insertion de ticket', error, {
         code: error.code,
         message: error.message,
         details: error.details
@@ -195,21 +196,21 @@ export async function POST(request) {
     }
 
     if (!data || data.length === 0) {
-      console.warn('Ticket créé mais aucune donnée retournée');
+      logWarn('Ticket créé mais aucune donnée retournée');
       return NextResponse.json(
         { success: true, message: 'Ticket créé avec succès' },
         { status: 201 }
       );
     }
 
-    console.log('✅ Ticket créé avec succès. ID:', data[0].id);
+    logInfo('Ticket créé avec succès', { ticketId: data[0].id });
     return NextResponse.json(
       { success: true, message: 'Ticket créé avec succès', ticketId: data[0].id },
       { status: 201 }
     );
 
   } catch (err) {
-    console.error('Erreur interne serveur:', err);
+    logError('Erreur interne serveur lors de l\'insertion de ticket', err);
     return NextResponse.json(
       { error: 'Erreur serveur. Veuillez réessayer plus tard.' },
       { status: 500 }

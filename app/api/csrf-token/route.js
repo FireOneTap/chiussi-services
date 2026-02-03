@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { generateCSRFToken, validateCSRFToken } from '../../../lib/csrf.js';
+import { error as logError } from '../../../lib/logger.js';
 
 /**
  * GET /api/csrf-token
@@ -23,7 +24,7 @@ export async function GET() {
       }
     );
   } catch (err) {
-    console.error('Erreur génération CSRF token:', err);
+    logError('Erreur génération CSRF token', err);
     return NextResponse.json(
       { error: 'Impossible de générer le token de sécurité' },
       { status: 500 }

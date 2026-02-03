@@ -6,6 +6,7 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction'
 import { createClient } from '@supabase/supabase-js'
 import { Session } from '@supabase/supabase-js'
+import { error as logError, warn as logWarn } from '../lib/client-logger'
 
 export default function AdminCalendar({ session }: { session: Session | null }) {
   const [events, setEvents] = useState([])
@@ -54,7 +55,7 @@ export default function AdminCalendar({ session }: { session: Session | null }) 
   async function fetchEvents(supabase: any) {
     const { data, error } = await supabase.from('appointments').select('*, tickets(*)').order('start_time', { ascending: true })
     if (error) {
-      console.error('Erreur Supabase appointments:', error);
+      logError('Erreur lors du chargement des rendez-vous', error);
       return;
     }
     

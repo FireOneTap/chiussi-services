@@ -13,6 +13,7 @@ export default function TicketsPage() {
   const [isSent, setIsSent] = useState(false)
   const [error, setError] = useState(null)
   const [csrfToken, setCSRFToken] = useState(null)
+  const [fieldErrors, setFieldErrors] = useState({})
 
   // États pour les données du formulaire
   const [formData, setFormData] = useState({
@@ -45,11 +46,22 @@ export default function TicketsPage() {
   const toggleDark = () => setDarkMode(!darkMode)
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+    const { name, value } = e.target
+    setFormData({ ...formData, [name]: value })
+    // Valider le champ en temps réel
+    validateField(name, value)
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    // Valider tous les champs avant submission
+    validateAllFields()
+    
+    if (Object.keys(fieldErrors).length > 0) {
+      setError('Veuillez corriger les erreurs dans le formulaire.')
+      return
+    }
     
     // Vérifier que le token CSRF est disponible
     if (!csrfToken) {
@@ -166,13 +178,13 @@ export default function TicketsPage() {
 
             {/* CHAMPS DE SAISIE */}
             <div className="grid md:grid-cols-2 gap-6">
-              <InputGroup name="full_name" value={formData.full_name} onChange={handleChange} icon={<User className="w-4 h-4" />} label="Nom complet" placeholder="Jean Dupont" darkMode={darkMode} />
-              <InputGroup name="email" value={formData.email} onChange={handleChange} icon={<Mail className="w-4 h-4" />} label="Email" placeholder="jean@exemple.com" type="email" darkMode={darkMode} />
+              <InputGroup name="full_name" value={formData.full_name} onChange={handleChange} icon={<User className="w-4 h-4" />} label="Nom complet" placeholder="Jean Dupont" darkMode={darkMode} error={fieldErrors.full_name} />
+              <InputGroup name="email" value={formData.email} onChange={handleChange} icon={<Mail className="w-4 h-4" />} label="Email" placeholder="jean@exemple.com" type="email" darkMode={darkMode} error={fieldErrors.email} />
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-              <InputGroup name="phone" value={formData.phone} onChange={handleChange} icon={<Phone className="w-4 h-4" />} label="Téléphone" placeholder="06 .. .. .. .." darkMode={darkMode} />
-              <InputGroup name="city" value={formData.city} onChange={handleChange} icon={<MapPin className="w-4 h-4" />} label="Ville" placeholder="La Garde-Freinet" darkMode={darkMode} />
+              <InputGroup name="phone" value={formData.phone} onChange={handleChange} icon={<Phone className="w-4 h-4" />} label="Téléphone" placeholder="06 .. .. .. .." darkMode={darkMode} error={fieldErrors.phone} />
+              <InputGroup name="city" value={formData.city} onChange={handleChange} icon={<MapPin className="w-4 h-4" />} label="Ville" placeholder="La Garde-Freinet" darkMode={darkMode} error={fieldErrors.city} />
             </div>
 
             <div className="space-y-2">
@@ -185,9 +197,10 @@ export default function TicketsPage() {
                 onChange={handleChange}
                 required 
                 rows="4" 
-                className={`w-full px-6 py-4 rounded-2xl border outline-none focus:ring-2 focus:ring-[#00D4FF] transition-all font-medium ${darkMode ? 'bg-black/20 border-white/10 text-white placeholder:text-gray-700' : 'bg-gray-50 border-gray-100 text-[#1A2E44] placeholder:text-gray-300'}`} 
+                className={`w-full px-6 py-4 rounded-2xl border outline-none focus:ring-2 transition-all font-medium ${fieldErrors.description ? 'border-red-400 focus:ring-red-400' : `focus:ring-[#00D4FF] ${darkMode ? 'border-white/10' : 'border-gray-100'}`} ${darkMode ? 'bg-black/20 text-white placeholder:text-gray-700' : 'bg-gray-50 text-[#1A2E44] placeholder:text-gray-300'}`} 
                 placeholder="Expliquez brièvement votre problème..."
               ></textarea>
+              {fieldErrors.description && <p className="text-red-500 text-xs font-bold italic ml-4">{fieldErrors.description}</p>}
             </div>
 
             {error && (
@@ -209,7 +222,7 @@ export default function TicketsPage() {
   )
 }
 
-function InputGroup({ icon, label, placeholder, name, value, onChange, type = "text", darkMode }) {
+function InputGroup({ icon, label, placeholder, name, value, onChange, type = "text", darkMode, error }) {
   return (
     <div className="space-y-2">
       <label className="text-[10px] font-black uppercase tracking-widest ml-4 flex items-center">
@@ -222,8 +235,9 @@ function InputGroup({ icon, label, placeholder, name, value, onChange, type = "t
         required 
         type={type} 
         placeholder={placeholder} 
-        className={`w-full px-6 py-4 rounded-2xl border outline-none focus:ring-2 focus:ring-[#00D4FF] transition-all font-bold ${darkMode ? 'bg-black/20 border-white/10 text-white placeholder:text-gray-700' : 'bg-gray-50 border-gray-100 text-[#1A2E44] placeholder:text-gray-300'}`} 
+        className={`w-full px-6 py-4 rounded-2xl border outline-none focus:ring-2 transition-all font-bold ${error ? 'border-red-400 focus:ring-red-400' : `focus:ring-[#00D4FF] ${darkMode ? 'border-white/10' : 'border-gray-100'}`} ${darkMode ? 'bg-black/20 text-white placeholder:text-gray-700' : 'bg-gray-50 text-[#1A2E44] placeholder:text-gray-300'}`} 
       />
+      {error && <p className="text-red-500 text-xs font-bold italic ml-4">{error}</p>}
     </div>
   )
 }

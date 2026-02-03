@@ -1,105 +1,35 @@
 'use client'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
+import interactionPlugin, { Draggable } from '@fullcalendar/interaction'
 import { supabase } from '../lib/supabase'
 
 export default function AdminCalendar() {
   const [events, setEvents] = useState([])
-  const draggedElementRef = useRef(null)
-  const calendarRef = useRef(null)
 
   useEffect(() => {
     fetchEvents()
-    setupDragDropHandlers()
-    
-    return () => {
-      cleanupDragDropHandlers()
+    let draggableEl = document.getElementById('external-events')
+    if (draggableEl) {
+      new Draggable(draggableEl, {
+        itemSelector: '.fc-event-ticket',
+        eventData: (eventEl) => ({
+          title: eventEl.getAttribute('title'),
+          duration: '01:30',
+          extendedProps: { 
+            ticketId: eventEl.getAttribute('data-id'),
+            city: eventEl.getAttribute('data-city'),
+            phone: eventEl.getAttribute('data-phone'),
+            email: eventEl.getAttribute('data-email'),
+            service: eventEl.getAttribute('data-service'),
+            description: eventEl.getAttribute('data-desc')
+          }
+        })
+      })
     }
   }, [])
-
-  const setupDragDropHandlers = () => {
-    const externalEvents = document.getElementById('external-events')
-    const calendarEl = document.querySelector('.fc')
-    
-    if (externalEvents) {
-      externalEvents.addEventListener('dragstart', handleDragStart)
-      externalEvents.addEventListener('dragend', handleDragEnd)
-    }
-    
-    if (calendarEl) {
-      calendarEl.addEventListener('dragover', handleDragOver)
-      calendarEl.addEventListener('drop', handleDropOnCalendar)
-      calendarEl.addEventListener('dragleave', handleDragLeave)
-    }
-  }
-
-  const cleanupDragDropHandlers = () => {
-    const externalEvents = document.getElementById('external-events')
-    const calendarEl = document.querySelector('.fc')
-    
-    if (externalEvents) {
-      externalEvents.removeEventListener('dragstart', handleDragStart)
-      externalEvents.removeEventListener('dragend', handleDragEnd)
-    }
-    
-    if (calendarEl) {
-      calendarEl.removeEventListener('dragover', handleDragOver)
-      calendarEl.removeEventListener('drop', handleDropOnCalendar)
-      calendarEl.removeEventListener('dragleave', handleDragLeave)
-    }
-  }
-
-  const handleDragStart = (e) => {
-    if (e.target.classList.contains('fc-event-ticket')) {
-      draggedElementRef.current = e.target
-      e.dataTransfer.effectAllowed = 'move'
-      e.dataTransfer.setData('text/html', e.target.innerHTML)
-    }
-  }
-
-  const handleDragEnd = () => {
-    draggedElementRef.current = null
-  }
-
-  const handleDragOver = (e) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-  }
-
-  const handleDragLeave = (e) => {
-    if (e.target.classList.contains('fc')) {
-      e.dataTransfer.dropEffect = 'none'
-    }
-  }
-
-  const handleDropOnCalendar = async (e) => {
-    e.preventDefault()
-    const el = draggedElementRef.current
-    if (!el) return
-    
-    // Récupérer la date/heure du drop
-    const rect = document.querySelector('.fc').getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
-    
-    // Chercher le slot de calendrier à cette position
-    const calendarApi = calendarRef.current?.getApi()
-    if (!calendarApi) {
-      await handleDrop({ dateStr: new Date().toISOString() })
-      return
-    }
-    
-    // Utiliser l'API FullCalendar pour obtenir la date
-    const dateInfo = calendarApi.dateForCoordinate({ x, y })
-    if (!dateInfo) {
-      await handleDrop({ dateStr: new Date().toISOString() })
-      return
-    }
-    
-    await handleDrop({ dateStr: dateInfo.dateStr })
-  }
 
   async function fetchEvents() {
     const { data, error } = await supabase.from('appointments').select('*, tickets(*)').order('start_time', { ascending: true })
@@ -179,13 +109,7 @@ export default function AdminCalendar() {
   };
 
   const handleDrop = async (info) => {
-    const el = draggedElementRef.current
-    if (!el) return
-    
-    const dateStr = info.dateStr || new Date().toISOString()
-    const startTime = new Date(dateStr)
-    const endTime = new Date(startTime.getTime() + 5400000) // +1h30
-    
+    const el = info.draggedEl;
     const { error } = await supabase.from('appointments').insert([{
       ticket_id: el.getAttribute('data-id'),
       title: el.getAttribute('title'),
@@ -194,21 +118,18 @@ export default function AdminCalendar() {
       email: el.getAttribute('data-email'),
       service_type: el.getAttribute('data-service'),
       description: el.getAttribute('data-desc'),
-      start_time: startTime.toISOString(),
-      end_time: endTime.toISOString(),
+      start_time: info.dateStr,
+      end_time: new Date(new Date(info.dateStr).getTime() + 5400000).toISOString(),
       status: 'prevu'
     }]);
-    
     if (!error) {
       await supabase.from('tickets').update({ status: 'planifié' }).eq('id', el.getAttribute('data-id'));
       fetchEvents();
       window.dispatchEvent(new Event('ticket-planned'));
-      draggedElementRef.current = null
     }
   };
 
-  const handleEventChange = async (info) => {
-    // Appelé quand un événement calendrier est modifié (déplacement, redimensionnement)
+  const handleUpdatePos = async (info) => {
     await supabase.from('appointments').update({
       start_time: info.event.startStr,
       end_time: info.event.endStr
@@ -223,8 +144,7 @@ export default function AdminCalendar() {
         .fc-timegrid-event { min-height: 90px !important; }
       `}</style>
       <FullCalendar
-        ref={calendarRef}
-        plugins={[dayGridPlugin, timeGridPlugin]}
+        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="timeGridWeek"
         events={events}
         locale="fr"
@@ -233,7 +153,9 @@ export default function AdminCalendar() {
         droppable={true}
         eventContent={renderEventContent}
         eventClick={handleEventClick}
-        eventChange={handleEventChange}
+        eventDrop={handleUpdatePos}
+        eventResize={handleUpdatePos}
+        drop={handleDrop}
         headerToolbar={{ left: 'prev,next today', center: 'title', right: 'timeGridWeek,dayGridMonth' }}
       />
     </div>

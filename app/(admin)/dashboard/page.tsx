@@ -2,14 +2,15 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { useRouter } from 'next/navigation'
+import { Session } from '@supabase/supabase-js'
 import AdminCalendar from '../../../components/AdminCalendar'
 import { Search, MapPin, Phone, Mail, LogOut } from "lucide-react"
 
 export default function DashboardPage() {
-  const [tickets, setTickets] = useState([])
+  const [tickets, setTickets] = useState<any[]>([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
-  const [session, setSession] = useState(null)
+  const [session, setSession] = useState<Session | null>(null)
   const router = useRouter()
 
   useEffect(() => {

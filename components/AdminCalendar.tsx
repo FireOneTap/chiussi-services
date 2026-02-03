@@ -5,16 +5,17 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction'
 import { createClient } from '@supabase/supabase-js'
+import { Session } from '@supabase/supabase-js'
 
-export default function AdminCalendar({ session }) {
+export default function AdminCalendar({ session }: { session: Session | null }) {
   const [events, setEvents] = useState([])
-  const supabaseRef = useRef(null)
+  const supabaseRef = useRef<any>(null)
 
   useEffect(() => {
     // Créer et authentifier le client Supabase une seule fois
     const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         auth: {
           persistSession: false,
@@ -50,14 +51,14 @@ export default function AdminCalendar({ session }) {
     }
   }, [session])
 
-  async function fetchEvents(supabase) {
+  async function fetchEvents(supabase: any) {
     const { data, error } = await supabase.from('appointments').select('*, tickets(*)').order('start_time', { ascending: true })
     if (error) {
       console.error('Erreur Supabase appointments:', error);
       return;
     }
     
-    setEvents(data.map(app => {
+    setEvents(data.map((app: any) => {
       // MODE MIROIR : On prend les infos du ticket en priorité, sinon celles de l'appli
       const info = app.tickets || app;
       return {
@@ -80,7 +81,7 @@ export default function AdminCalendar({ session }) {
     }))
   }
 
-  const handleEventClick = async (info) => {
+  const handleEventClick = async (info: any) => {
     const p = info.event.extendedProps;
     const msg = `CLIENT : ${info.event.title}\n------------------\n` +
                 `1. Taper 'OK' -> Terminer/Reprendre\n` +
@@ -110,7 +111,7 @@ export default function AdminCalendar({ session }) {
     fetchEvents(supabaseRef.current);
   };
 
-  const renderEventContent = (eventInfo) => {
+  const renderEventContent = (eventInfo: any) => {
     const p = eventInfo.event.extendedProps;
     const isDone = p.status === 'termine';
     return (
@@ -130,7 +131,7 @@ export default function AdminCalendar({ session }) {
     );
   };
 
-  const handleDrop = async (info) => {
+  const handleDrop = async (info: any) => {
     const el = info.draggedEl;
     const { error } = await supabaseRef.current.from('appointments').insert([{
       ticket_id: el.getAttribute('data-id'),
@@ -151,7 +152,7 @@ export default function AdminCalendar({ session }) {
     }
   };
 
-  const handleUpdatePos = async (info) => {
+  const handleUpdatePos = async (info: any) => {
     await supabaseRef.current.from('appointments').update({
       start_time: info.event.startStr,
       end_time: info.event.endStr

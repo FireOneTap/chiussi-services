@@ -3,23 +3,39 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { useRouter } from 'next/navigation'
 import AdminCalendar from '../../../components/AdminCalendar'
-import { Search, MapPin, Phone, Mail, FileText } from "lucide-react"
+import { Search, MapPin, Phone, Mail, LogOut } from "lucide-react"
 
 export default function DashboardPage() {
   const [tickets, setTickets] = useState([])
   const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        router.push('/login')
+      } else {
+        fetchTickets()
+        setLoading(false)
+      }
+    }
+    
+    checkAuth()
+  }, [])
 
   async function fetchTickets() {
     const { data } = await supabase.from('tickets').select('*').eq('status', 'nouveau').order('created_at', { ascending: false })
     if (data) setTickets(data)
   }
 
-  useEffect(() => {
-    fetchTickets()
-    window.addEventListener('ticket-planned', fetchTickets)
-    return () => window.removeEventListener('ticket-planned', fetchTickets)
-  }, [])
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
+
+  if (loading) return <div className="min-h-screen bg-[#1A2E44] text-white flex items-center justify-center">Chargement...</div>
 
   const filtered = tickets.filter(t => 
     t.full_name?.toLowerCase().includes(search.toLowerCase()) || 
@@ -31,13 +47,21 @@ export default function DashboardPage() {
       <div className="max-w-[98%] mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
           <h1 className="text-4xl font-black italic uppercase tracking-tighter">ADMIN <span className="text-[#00D4FF]">CONSOLE</span></h1>
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 opacity-20" size={18}/>
-            <input 
-              className="bg-white/5 border border-white/10 rounded-2xl pl-10 pr-4 py-3 w-full focus:border-[#00D4FF] outline-none transition-all"
-              placeholder="Rechercher un client..."
-              onChange={(e) => setSearch(e.target.value)}
-            />
+          <div className="flex gap-4 w-full md:w-auto">
+            <div className="relative flex-1 md:flex-none md:w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 opacity-20" size={18}/>
+              <input 
+                className="bg-white/5 border border-white/10 rounded-2xl pl-10 pr-4 py-3 w-full focus:border-[#00D4FF] outline-none transition-all"
+                placeholder="Rechercher un client..."
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <button 
+              onClick={handleLogout}
+              className="bg-red-500/20 border border-red-500/30 hover:bg-red-500/30 text-red-400 px-4 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all"
+            >
+              <LogOut size={18} /> Déconnexion
+            </button>
           </div>
         </div>
 

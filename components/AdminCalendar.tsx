@@ -12,17 +12,44 @@ export default function AdminCalendar() {
 
   useEffect(() => {
     fetchEvents()
-    setupExternalDragListeners()
+    setupDragDropHandlers()
     
     return () => {
-      // Cleanup event listeners
-      const externalEvents = document.getElementById('external-events')
-      if (externalEvents) {
-        externalEvents.removeEventListener('dragstart', handleDragStart)
-        externalEvents.removeEventListener('dragend', handleDragEnd)
-      }
+      cleanupDragDropHandlers()
     }
   }, [])
+
+  const setupDragDropHandlers = () => {
+    const externalEvents = document.getElementById('external-events')
+    const calendarEl = document.querySelector('.fc')
+    
+    if (externalEvents) {
+      externalEvents.addEventListener('dragstart', handleDragStart)
+      externalEvents.addEventListener('dragend', handleDragEnd)
+    }
+    
+    if (calendarEl) {
+      calendarEl.addEventListener('dragover', handleDragOver)
+      calendarEl.addEventListener('drop', handleDropOnCalendar)
+      calendarEl.addEventListener('dragleave', handleDragLeave)
+    }
+  }
+
+  const cleanupDragDropHandlers = () => {
+    const externalEvents = document.getElementById('external-events')
+    const calendarEl = document.querySelector('.fc')
+    
+    if (externalEvents) {
+      externalEvents.removeEventListener('dragstart', handleDragStart)
+      externalEvents.removeEventListener('dragend', handleDragEnd)
+    }
+    
+    if (calendarEl) {
+      calendarEl.removeEventListener('dragover', handleDragOver)
+      calendarEl.removeEventListener('drop', handleDropOnCalendar)
+      calendarEl.removeEventListener('dragleave', handleDragLeave)
+    }
+  }
 
   const handleDragStart = (e) => {
     if (e.target.classList.contains('fc-event-ticket')) {
@@ -36,12 +63,42 @@ export default function AdminCalendar() {
     draggedElementRef.current = null
   }
 
-  const setupExternalDragListeners = () => {
-    const externalEvents = document.getElementById('external-events')
-    if (externalEvents) {
-      externalEvents.addEventListener('dragstart', handleDragStart)
-      externalEvents.addEventListener('dragend', handleDragEnd)
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+  }
+
+  const handleDragLeave = (e) => {
+    if (e.target.classList.contains('fc')) {
+      e.dataTransfer.dropEffect = 'none'
     }
+  }
+
+  const handleDropOnCalendar = async (e) => {
+    e.preventDefault()
+    const el = draggedElementRef.current
+    if (!el) return
+    
+    // Récupérer la date/heure du drop
+    const rect = document.querySelector('.fc').getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    
+    // Chercher le slot de calendrier à cette position
+    const calendarApi = calendarRef.current?.getApi()
+    if (!calendarApi) {
+      await handleDrop({ dateStr: new Date().toISOString() })
+      return
+    }
+    
+    // Utiliser l'API FullCalendar pour obtenir la date
+    const dateInfo = calendarApi.dateForCoordinate({ x, y })
+    if (!dateInfo) {
+      await handleDrop({ dateStr: new Date().toISOString() })
+      return
+    }
+    
+    await handleDrop({ dateStr: dateInfo.dateStr })
   }
 
   async function fetchEvents() {
@@ -125,6 +182,10 @@ export default function AdminCalendar() {
     const el = draggedElementRef.current
     if (!el) return
     
+    const dateStr = info.dateStr || new Date().toISOString()
+    const startTime = new Date(dateStr)
+    const endTime = new Date(startTime.getTime() + 5400000) // +1h30
+    
     const { error } = await supabase.from('appointments').insert([{
       ticket_id: el.getAttribute('data-id'),
       title: el.getAttribute('title'),
@@ -133,14 +194,16 @@ export default function AdminCalendar() {
       email: el.getAttribute('data-email'),
       service_type: el.getAttribute('data-service'),
       description: el.getAttribute('data-desc'),
-      start_time: info.dateStr,
-      end_time: new Date(new Date(info.dateStr).getTime() + 5400000).toISOString(),
+      start_time: startTime.toISOString(),
+      end_time: endTime.toISOString(),
       status: 'prevu'
     }]);
+    
     if (!error) {
       await supabase.from('tickets').update({ status: 'planifié' }).eq('id', el.getAttribute('data-id'));
       fetchEvents();
       window.dispatchEvent(new Event('ticket-planned'));
+      draggedElementRef.current = null
     }
   };
 
@@ -160,6 +223,7 @@ export default function AdminCalendar() {
         .fc-timegrid-event { min-height: 90px !important; }
       `}</style>
       <FullCalendar
+        ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin]}
         initialView="timeGridWeek"
         events={events}

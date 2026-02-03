@@ -43,6 +43,64 @@ export default function TicketsPage() {
     fetchCSRFToken()
   }, [])
 
+  /**
+   * Retourne l'erreur d'un champ (synchrone, pour handleSubmit)
+   */
+  const getFieldError = (name, value) => {
+    const trimmed = String(value).trim()
+    
+    switch (name) {
+      case 'full_name':
+        if (!trimmed) return 'Le nom est obligatoire'
+        if (trimmed.length < 2) return 'Le nom doit avoir au moins 2 caractères'
+        if (trimmed.length > 100) return 'Le nom ne peut pas dépasser 100 caractères'
+        if (!/^[a-zA-ZÀ-ÿ\s'-]+$/.test(trimmed)) return 'Le nom contient des caractères invalides'
+        break
+
+      case 'email':
+        if (!trimmed) return 'L\'email est obligatoire'
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return 'Email invalide'
+        if (trimmed.length > 255) return 'L\'email est trop long'
+        break
+
+      case 'phone':
+        if (!trimmed) return 'Le téléphone est obligatoire'
+        if (!/^[\d\s\-\+()\.]+$/.test(trimmed)) return 'Le téléphone contient des caractères invalides'
+        if (trimmed.replace(/\D/g, '').length < 6) return 'Le téléphone doit avoir au moins 6 chiffres'
+        if (trimmed.length > 20) return 'Le téléphone est trop long'
+        break
+
+      case 'city':
+        if (!trimmed) return 'La ville est obligatoire'
+        if (trimmed.length < 2) return 'La ville doit avoir au moins 2 caractères'
+        if (trimmed.length > 100) return 'La ville est trop longue'
+        if (!/^[a-zA-ZÀ-ÿ\s'-]+$/.test(trimmed)) return 'La ville contient des caractères invalides'
+        break
+
+      case 'description':
+        if (!trimmed) return 'La description est obligatoire'
+        if (trimmed.length < 10) return 'La description doit avoir au moins 10 caractères'
+        if (trimmed.length > 2000) return 'La description ne peut pas dépasser 2000 caractères'
+        break
+    }
+    
+    return null
+  }
+
+  /**
+   * Valide un champ et met à jour l'état (async, pour onChange)
+   */
+  const validateField = (name, value) => {
+    const error = getFieldError(name, value)
+    if (error) {
+      setFieldErrors({ ...fieldErrors, [name]: error })
+    } else {
+      const newErrors = { ...fieldErrors }
+      delete newErrors[name]
+      setFieldErrors(newErrors)
+    }
+  }
+
   const toggleDark = () => setDarkMode(!darkMode)
 
   const handleChange = (e) => {
@@ -55,10 +113,22 @@ export default function TicketsPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    // Valider tous les champs avant submission
-    validateAllFields()
+    // Valider tous les champs de manière synchrone
+    const fieldsToValidate = ['full_name', 'email', 'phone', 'city', 'description']
+    const errors = {}
     
-    if (Object.keys(fieldErrors).length > 0) {
+    fieldsToValidate.forEach((field) => {
+      const error = getFieldError(field, formData[field])
+      if (error) {
+        errors[field] = error
+      }
+    })
+    
+    // Mettre à jour l'état avec les erreurs
+    setFieldErrors(errors)
+    
+    // Si erreurs, afficher et arrêter
+    if (Object.keys(errors).length > 0) {
       setError('Veuillez corriger les erreurs dans le formulaire.')
       return
     }

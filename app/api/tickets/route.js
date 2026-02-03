@@ -11,14 +11,18 @@ export async function POST(request) {
   try {
     const body = await request.json();
     
-    // On force l'insertion d'un objet propre
+    // On force l'insertion d'un objet propre avec les colonnes existantes
     const { data, error } = await supabase
       .from('tickets')
       .insert([
         { 
-          type: body.type, 
-          urgence: body.urgence, 
-          message: body.message 
+          full_name: body.full_name || body.name || '', 
+          email: body.email || '', 
+          phone: body.phone || '', 
+          city: body.city || '', 
+          service_type: body.service_type || body.type || '', 
+          description: body.description || body.message || '', 
+          status: 'nouveau'
         }
       ])
       .select();

@@ -4,6 +4,7 @@ import { supabase } from '../../../lib/supabase'
 import { useRouter } from 'next/navigation'
 import { Session } from '@supabase/supabase-js'
 import AdminCalendar from '../../../components/AdminCalendar'
+import { error as logError } from '../../../lib/client-logger'
 import { Search, MapPin, Phone, Mail, LogOut, AlertCircle } from "lucide-react"
 
 export default function DashboardPage() {
@@ -39,7 +40,7 @@ export default function DashboardPage() {
         .order('created_at', { ascending: false })
       
       if (supabaseError) {
-        console.error('Erreur lors du chargement des tickets:', supabaseError)
+        logError('Erreur lors du chargement des tickets', supabaseError)
         setError('Impossible de charger les tickets. Veuillez rafraîchir la page.')
         setTickets([])
         return
@@ -49,7 +50,7 @@ export default function DashboardPage() {
         setTickets(data)
       }
     } catch (err) {
-      console.error('Erreur inattendue:', err)
+      logError('Erreur inattendue lors du fetch des tickets', err)
       setError('Une erreur inattendue s\'est produite. Veuillez réessayer.')
       setTickets([])
     }

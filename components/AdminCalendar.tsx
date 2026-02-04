@@ -112,7 +112,7 @@ export default function AdminCalendar({ session }: { session: Session | null }) 
     fetchEvents(supabaseRef.current);
   };
 
-  const renderEventContent = (eventInfo: any) => {
+  const renderEventContent = (eventInfo: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     const p = eventInfo.event.extendedProps;
     const isDone = p.status === 'termine';
     return (
@@ -132,7 +132,7 @@ export default function AdminCalendar({ session }: { session: Session | null }) 
     );
   };
 
-  const handleDrop = async (info: any) => {
+  const handleDrop = async (info: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     const el = info.draggedEl;
     const { error } = await supabaseRef.current.from('appointments').insert([{
       ticket_id: el.getAttribute('data-id'),

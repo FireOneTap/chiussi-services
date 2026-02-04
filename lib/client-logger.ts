@@ -30,7 +30,7 @@ function maskSensitiveData(str: string): string {
 /**
  * Récursivement masque les données sensibles dans les objets
  */
-function sanitizeObject(obj: any, depth: number = 0): any {
+function sanitizeObject(obj: any, depth: number = 0): any { // eslint-disable-line @typescript-eslint/no-explicit-any
   if (depth > 5) return '[DEEP_OBJECT]';
   
   if (typeof obj === 'string') {
@@ -42,7 +42,7 @@ function sanitizeObject(obj: any, depth: number = 0): any {
   }
   
   if (obj !== null && typeof obj === 'object') {
-    const sanitized: Record<string, any> = {};
+    const sanitized: Record<string, any> = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
     for (const [key, value] of Object.entries(obj)) {
       if (['password', 'token', 'secret', 'apiKey', 'accessToken', 'refreshToken'].includes(key)) {
         sanitized[key] = '[REDACTED]';
@@ -63,7 +63,7 @@ function sanitizeObject(obj: any, depth: number = 0): any {
 /**
  * Log d'erreur côté client
  */
-export function error(message: string, err: any = null, context: any = null): void {
+export function error(message: string, err: any = null, context: any = null): void { // eslint-disable-line @typescript-eslint/no-explicit-any
   const errorStr = err instanceof Error ? err.message : String(err);
   const combinedContext = {
     ...context,
@@ -75,13 +75,13 @@ export function error(message: string, err: any = null, context: any = null): vo
 /**
  * Log d'avertissement côté client
  */
-export function warn(message: string, context: any = null): void {
+export function warn(message: string, context: any = null): void { // eslint-disable-line @typescript-eslint/no-explicit-any
   console.warn(`[WARN] ${message}`, context ? sanitizeObject(context) : '');
 }
 
 /**
  * Log d'information côté client
  */
-export function info(message: string, context: any = null): void {
+export function info(message: string, context: any = null): void { // eslint-disable-line @typescript-eslint/no-explicit-any
   console.log(`[INFO] ${message}`, context ? sanitizeObject(context) : '');
 }

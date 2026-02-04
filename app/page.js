@@ -1,6 +1,7 @@
 ﻿'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { 
   Laptop, Building2, 
   FileText, ChevronRight, Phone, Mail, MapPin, 
@@ -101,8 +102,14 @@ export default function HomePage() {
         <div className="grid md:grid-cols-3 gap-8">
           {services.map((s, idx) => (
             <div key={idx} className={`rounded-3xl shadow-xl border flex flex-col h-full overflow-hidden transition-all ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-100'}`}>
-              <div className="h-32 overflow-hidden">
-                <img src={s.image} className="w-full h-full object-cover opacity-60" />
+              <div className="h-32 overflow-hidden relative">
+                <Image 
+                  src={s.image} 
+                  alt={s.title}
+                  fill
+                  className="w-full h-full object-cover opacity-60"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                />
               </div>
               <div className="p-8 flex-grow">
                 <div className="mb-6">{s.icon}</div>

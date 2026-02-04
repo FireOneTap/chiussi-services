@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { generateCSRFToken, validateCSRFToken } from '../../../lib/csrf.js';
+import { generateCSRFToken } from '../../../lib/csrf.js';
 import { error as logError } from '../../../lib/logger.js';
 
 /**

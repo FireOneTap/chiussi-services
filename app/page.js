@@ -2,9 +2,9 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { 
-  Laptop, ShieldCheck, Wifi, GraduationCap, Building2, 
+  Laptop, Building2, 
   FileText, ChevronRight, Phone, Mail, MapPin, 
-  HelpCircle, Sun, Moon, Clock 
+  HelpCircle, Sun, Moon
 } from "lucide-react"
 
 export default function HomePage() {

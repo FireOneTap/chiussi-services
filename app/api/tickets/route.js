@@ -119,7 +119,7 @@ export async function POST(request) {
   try {
     // Vérifier le rate limiting
     const ip = getClientIP(request);
-    const { allowed, remaining, resetTime } = checkRateLimit(ip);
+    const { allowed, resetTime } = checkRateLimit(ip);
     
     if (!allowed) {
       const retryAfter = Math.ceil((resetTime - Date.now()) / 1000);

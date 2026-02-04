@@ -6,11 +6,11 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction'
 import { createClient } from '@supabase/supabase-js'
 import { Session } from '@supabase/supabase-js'
-import { error as logError, warn as logWarn } from '../lib/client-logger'
+import { error as logError } from '../lib/client-logger'
 
 export default function AdminCalendar({ session }: { session: Session | null }) {
   const [events, setEvents] = useState([])
-  const supabaseRef = useRef<any>(null)
+  const supabaseRef = useRef<any>(null) // eslint-disable-line @typescript-eslint/no-explicit-any
 
   useEffect(() => {
     // Créer et authentifier le client Supabase une seule fois
@@ -32,7 +32,7 @@ export default function AdminCalendar({ session }: { session: Session | null }) 
     supabaseRef.current = supabase
     fetchEvents(supabase)
     
-    let draggableEl = document.getElementById('external-events')
+    const draggableEl = document.getElementById('external-events')
     if (draggableEl) {
       new Draggable(draggableEl, {
         itemSelector: '.fc-event-ticket',
@@ -52,7 +52,7 @@ export default function AdminCalendar({ session }: { session: Session | null }) 
     }
   }, [session])
 
-  async function fetchEvents(supabase: any) {
+  async function fetchEvents(supabase: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
     const { data, error } = await supabase.from('appointments').select('*, tickets(*)').order('start_time', { ascending: true })
     if (error) {
       logError('Erreur lors du chargement des rendez-vous', error);

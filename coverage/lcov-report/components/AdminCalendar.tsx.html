@@ -443,11 +443,11 @@ import timeGridPlugin from <span class="cstat-no" title="statement not covered" 
 import interactionPlugin, { Draggable } from <span class="cstat-no" title="statement not covered" >'@fullcalendar/interaction'</span>
 import { createClient } from <span class="cstat-no" title="statement not covered" >'@supabase/supabase-js'</span>
 import { Session } from '@supabase/supabase-js'
-import { error as logError, warn as logWarn } from <span class="cstat-no" title="statement not covered" >'../lib/client-logger'</span>
+import { error as logError } from <span class="cstat-no" title="statement not covered" >'../lib/client-logger'</span>
 &nbsp;
 export default function <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >AdminCalendar({</span></span> session }: { session: Session | null }) {
   const [events, setEvents] = <span class="cstat-no" title="statement not covered" >useState([])</span>
-  const supabaseRef = <span class="cstat-no" title="statement not covered" >useRef&lt;any&gt;(null)</span>
+  const supabaseRef = <span class="cstat-no" title="statement not covered" >useRef&lt;any&gt;(null) /</span>/ eslint-disable-line @typescript-eslint/no-explicit-any
 &nbsp;
 <span class="cstat-no" title="statement not covered" >  useEffect(<span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
     // Créer et authentifier le client Supabase une seule fois
@@ -469,7 +469,7 @@ export default function <span class="cstat-no" title="statement not covered" ><s
 <span class="cstat-no" title="statement not covered" >    supabaseRef.current = supabase</span>
 <span class="cstat-no" title="statement not covered" >    fetchEvents(supabase)</span>
     
-    let draggableEl = <span class="cstat-no" title="statement not covered" >document.getElementById('external-events')</span>
+    const draggableEl = <span class="cstat-no" title="statement not covered" >document.getElementById('external-events')</span>
 <span class="cstat-no" title="statement not covered" >    if (draggableEl) {</span>
 <span class="cstat-no" title="statement not covered" >      new Draggable(draggableEl, {</span>
         itemSelector: '.fc-event-ticket',
@@ -489,14 +489,14 @@ export default function <span class="cstat-no" title="statement not covered" ><s
     }
   }, [session])
 &nbsp;
-  async function <span class="fstat-no" title="function not covered" >fetchEvents(s</span>upabase: any) {
+  async function <span class="fstat-no" title="function not covered" >fetchEvents(s</span>upabase: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
     const { data, error } = <span class="cstat-no" title="statement not covered" >await supabase.from('appointments').select('*, tickets(*)').order('start_time', { ascending: true })</span>
 <span class="cstat-no" title="statement not covered" >    if (error) {</span>
 <span class="cstat-no" title="statement not covered" >      logError('Erreur lors du chargement des rendez-vous', error);</span>
 <span class="cstat-no" title="statement not covered" >      return;</span>
     }
     
-<span class="cstat-no" title="statement not covered" >    setEvents(data.map(<span class="fstat-no" title="function not covered" >(a</span>pp: any) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    setEvents(data.map(<span class="fstat-no" title="function not covered" >(a</span>pp: any) =&gt; { // eslint-disable-line @typescript-eslint/no-explicit-any</span>
       // MODE MIROIR : On prend les infos du ticket en priorité, sinon celles de l'appli
       const info = <span class="cstat-no" title="statement not covered" >app.tickets || app;</span>
 <span class="cstat-no" title="statement not covered" >      return {</span>
@@ -519,8 +519,8 @@ export default function <span class="cstat-no" title="statement not covered" ><s
     }))
   }
 &nbsp;
-  const handleEventClick = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >async (i</span>nfo: any) =&gt; {</span>
-    const p = <span class="cstat-no" title="statement not covered" >info.event.extendedProps;</span>
+  const handleEventClick = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >async (i</span>nfo: any) =&gt; { // eslint-disable-line @typescript-eslint/no-explicit-any</span>
+    const p = <span class="cstat-no" title="statement not covered" >info.event.extendedProps </span>as any; // eslint-disable-line @typescript-eslint/no-explicit-any
     const msg = <span class="cstat-no" title="statement not covered" >`CLIENT : ${info.event.title}\n------------------\n` +</span>
                 `1. Taper 'OK' -&gt; Terminer/Reprendre\n` +
                 `2. Taper 'SUP' -&gt; Supprimer\n` +
@@ -549,7 +549,7 @@ export default function <span class="cstat-no" title="statement not covered" ><s
 <span class="cstat-no" title="statement not covered" >    fetchEvents(supabaseRef.current);</span>
   };
 &nbsp;
-  const renderEventContent = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(e</span>ventInfo: any) =&gt; {</span>
+  const renderEventContent = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(e</span>ventInfo: any) =&gt; { // eslint-disable-line @typescript-eslint/no-explicit-any</span>
     const p = <span class="cstat-no" title="statement not covered" >eventInfo.event.extendedProps;</span>
     const isDone = <span class="cstat-no" title="statement not covered" >p.status === 'termine';</span>
     return (
@@ -569,7 +569,7 @@ export default function <span class="cstat-no" title="statement not covered" ><s
     );
   };
 &nbsp;
-  const handleDrop = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >async (i</span>nfo: any) =&gt; {</span>
+  const handleDrop = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >async (i</span>nfo: any) =&gt; { // eslint-disable-line @typescript-eslint/no-explicit-any</span>
     const el = <span class="cstat-no" title="statement not covered" >info.draggedEl;</span>
     const { error } = <span class="cstat-no" title="statement not covered" >await supabaseRef.current.from('appointments').insert([{</span>
       ticket_id: el.getAttribute('data-id'),
@@ -590,7 +590,7 @@ export default function <span class="cstat-no" title="statement not covered" ><s
     }
   };
 &nbsp;
-  const handleUpdatePos = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >async (i</span>nfo: any) =&gt; {</span>
+  const handleUpdatePos = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >async (i</span>nfo: any) =&gt; { // eslint-disable-line @typescript-eslint/no-explicit-any</span>
 <span class="cstat-no" title="statement not covered" >    await supabaseRef.current.from('appointments').update({</span>
       start_time: info.event.startStr,
       end_time: info.event.endStr
@@ -628,7 +628,7 @@ export default function <span class="cstat-no" title="statement not covered" ><s
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-02-04T00:03:08.390Z
+                at 2026-02-04T12:16:47.109Z
             </div>
         <script src="../prettify.js"></script>
         <script>

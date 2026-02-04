@@ -68,8 +68,9 @@ describe('Rate Limiting', () => {
       expect(checkRateLimit(ip1).allowed).toBe(false)
       
       // ip2 should still have requests available
-      expect(checkRateLimit(ip2).allowed).toBe(true)
-      expect(checkRateLimit(ip2).remaining).toBe(4)
+      const ip2Result = checkRateLimit(ip2)
+      expect(ip2Result.allowed).toBe(true)
+      expect(ip2Result.remaining).toBe(4)
     })
 
     it('should handle X-Forwarded-For header format', () => {

@@ -153,7 +153,7 @@ export default function AdminCalendar({ session }: { session: Session | null }) 
     }
   };
 
-  const handleUpdatePos = async (info: any) => {
+  const handleUpdatePos = async (info: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     await supabaseRef.current.from('appointments').update({
       start_time: info.event.startStr,
       end_time: info.event.endStr

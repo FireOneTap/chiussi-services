@@ -8,6 +8,7 @@ const SENSITIVE_PATTERNS = {
   email: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
   phone: /\b(?:\+?\d{1,3}[-.\s]?)?\d{6,14}\b/g,
   address: /\d+\s+(?:[a-zA-Z]+\s+)*(?:Street|St|Road|Rd|Avenue|Ave|Boulevard|Blvd|Lane|Ln|Drive|Dr|Court|Ct|Parkway|Pkwy)/gi,
+  // eslint-disable-next-line no-useless-escape
   token: /bearer\s+[\w.-]+|token["\']?\s*:\s*["\'][\w.-]+["\']|access_token["\']?\s*:\s*["\'][\w.-]+["\']/gi,
 };
 

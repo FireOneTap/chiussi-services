@@ -79,6 +79,7 @@ export default function TicketsPage() {
 
       case 'phone':
         if (!trimmed) return 'Le téléphone est obligatoire'
+        // eslint-disable-next-line no-useless-escape
         if (!/^[\d\s\-\+()\.]+$/.test(trimmed)) return 'Le téléphone contient des caractères invalides'
         if (trimmed.replace(/\D/g, '').length < 6) return 'Le téléphone doit avoir au moins 6 chiffres'
         if (trimmed.length > 20) return 'Le téléphone est trop long'

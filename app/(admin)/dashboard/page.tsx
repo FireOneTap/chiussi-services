@@ -8,12 +8,12 @@ import { error as logError } from '../../../lib/client-logger'
 import { Search, MapPin, Phone, Mail, LogOut, AlertCircle } from "lucide-react"
 
 export default function DashboardPage() {
-  const [tickets, setTickets] = useState<any[]>([])
+  const [tickets, setTickets] = useState<any[]>([]) // eslint-disable-line @typescript-eslint/no-explicit-any
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [session, setSession] = useState<Session | null>(null)
-  const router = useRouter()
+  const router = useRouter() as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   useEffect(() => {
     const checkAuth = async () => {

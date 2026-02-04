@@ -59,7 +59,7 @@ export default function AdminCalendar({ session }: { session: Session | null }) 
       return;
     }
     
-    setEvents(data.map((app: any) => {
+    setEvents(data.map((app: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
       // MODE MIROIR : On prend les infos du ticket en priorité, sinon celles de l'appli
       const info = app.tickets || app;
       return {
@@ -82,8 +82,8 @@ export default function AdminCalendar({ session }: { session: Session | null }) 
     }))
   }
 
-  const handleEventClick = async (info: any) => {
-    const p = info.event.extendedProps;
+  const handleEventClick = async (info: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    const p = info.event.extendedProps as any; // eslint-disable-line @typescript-eslint/no-explicit-any
     const msg = `CLIENT : ${info.event.title}\n------------------\n` +
                 `1. Taper 'OK' -> Terminer/Reprendre\n` +
                 `2. Taper 'SUP' -> Supprimer\n` +

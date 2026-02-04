@@ -23,6 +23,7 @@ const VALIDATION_RULES = {
     required: true,
     minLength: 8,
     maxLength: 20,
+    // eslint-disable-next-line no-useless-escape
     pattern: /^[\d\s\-\+()\.]+$/,
     message: 'Le téléphone doit contenir entre 8 et 20 caractères'
   },

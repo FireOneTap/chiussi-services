@@ -161,9 +161,9 @@ export async function POST(request) {
     }
 
     // Vérifier le token CSRF
-    const csrfToken = body.csrfToken;
-    const csrfValidation = validateCSRFToken(csrfToken);
-    if (!csrfValidation.valid) {
+    const csrfToken = body.csrfToken || body.csrf_token;
+    const isValidCSRF = validateCSRFToken(csrfToken);
+    if (!isValidCSRF) {
       return NextResponse.json(
         { error: 'Erreur de sécurité. Veuillez recharger la page et réessayer.' },
         { status: 403 }

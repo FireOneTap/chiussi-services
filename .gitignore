@@ -3,6 +3,4 @@
 out/
 build/
 .env*.local
-.DS_Store
-*.sst
-*.node
+.env.sentry-build-plugin

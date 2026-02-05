@@ -3,4 +3,9 @@
 out/
 build/
 .env*.local
+.DS_Store
+*.sst
+*.node
+
+# Sentry Config File
 .env.sentry-build-plugin

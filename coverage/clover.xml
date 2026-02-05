@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1770322030107" clover="3.2.0">
-  <project timestamp="1770322030107" name="All files">
-    <metrics statements="511" coveredstatements="39" conditionals="347" coveredconditionals="15" methods="79" coveredmethods="3" elements="937" coveredelements="57" complexity="0" loc="511" ncloc="511" packages="13" files="19" classes="19"/>
+<coverage generated="1770322678497" clover="3.2.0">
+  <project timestamp="1770322678497" name="All files">
+    <metrics statements="537" coveredstatements="39" conditionals="351" coveredconditionals="15" methods="85" coveredmethods="3" elements="973" coveredelements="57" complexity="0" loc="537" ncloc="537" packages="13" files="20" classes="20"/>
     <package name="app">
-      <metrics statements="17" coveredstatements="0" conditionals="19" coveredconditionals="0" methods="6" coveredmethods="0"/>
+      <metrics statements="23" coveredstatements="0" conditionals="19" coveredconditionals="0" methods="8" coveredmethods="0"/>
+      <file name="global-error.tsx" path="D:\Chiussi Services\chiussi-services\app\global-error.tsx">
+        <metrics statements="6" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
+        <line num="3" count="0" type="stmt"/>
+        <line num="4" count="0" type="stmt"/>
+        <line num="5" count="0" type="stmt"/>
+        <line num="7" count="0" type="stmt"/>
+        <line num="12" count="0" type="stmt"/>
+        <line num="13" count="0" type="stmt"/>
+      </file>
       <file name="layout.js" path="D:\Chiussi Services\chiussi-services\app\layout.js">
         <metrics statements="5" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
@@ -129,15 +138,16 @@
       </file>
     </package>
     <package name="app.api.sentry-example-api">
-      <metrics statements="6" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
+      <metrics statements="7" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
       <file name="route.ts" path="D:\Chiussi Services\chiussi-services\app\api\sentry-example-api\route.ts">
-        <metrics statements="6" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
+        <metrics statements="7" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
+        <line num="1" count="0" type="stmt"/>
         <line num="2" count="0" type="stmt"/>
         <line num="6" count="0" type="stmt"/>
         <line num="7" count="0" type="stmt"/>
-        <line num="11" count="0" type="stmt"/>
         <line num="12" count="0" type="stmt"/>
         <line num="13" count="0" type="stmt"/>
+        <line num="14" count="0" type="stmt"/>
       </file>
     </package>
     <package name="app.api.tickets">
@@ -227,17 +237,34 @@
       </file>
     </package>
     <package name="app.sentry-example-page">
-      <metrics statements="2" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
+      <metrics statements="19" coveredstatements="0" conditionals="4" coveredconditionals="0" methods="6" coveredmethods="0"/>
       <file name="page.tsx" path="D:\Chiussi Services\chiussi-services\app\sentry-example-page\page.tsx">
-        <metrics statements="2" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
+        <metrics statements="19" coveredstatements="0" conditionals="4" coveredconditionals="0" methods="6" coveredmethods="0"/>
+        <line num="3" count="0" type="stmt"/>
+        <line num="4" count="0" type="stmt"/>
+        <line num="5" count="0" type="stmt"/>
+        <line num="9" count="0" type="stmt"/>
         <line num="10" count="0" type="stmt"/>
+        <line num="14" count="0" type="stmt"/>
+        <line num="15" count="0" type="stmt"/>
+        <line num="16" count="0" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
         <line num="19" count="0" type="stmt"/>
+        <line num="21" count="0" type="stmt"/>
+        <line num="22" count="0" type="stmt"/>
+        <line num="24" count="0" type="stmt"/>
+        <line num="74" count="0" type="stmt"/>
+        <line num="75" count="0" type="stmt"/>
+        <line num="81" count="0" type="stmt"/>
+        <line num="82" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="83" count="0" type="stmt"/>
+        <line num="87" count="0" type="stmt"/>
       </file>
     </package>
     <package name="app.tickets">
-      <metrics statements="102" coveredstatements="0" conditionals="94" coveredconditionals="0" methods="13" coveredmethods="0"/>
+      <metrics statements="104" coveredstatements="0" conditionals="94" coveredconditionals="0" methods="13" coveredmethods="0"/>
       <file name="page.js" path="D:\Chiussi Services\chiussi-services\app\tickets\page.js">
-        <metrics statements="102" coveredstatements="0" conditionals="94" coveredconditionals="0" methods="13" coveredmethods="0"/>
+        <metrics statements="104" coveredstatements="0" conditionals="94" coveredconditionals="0" methods="13" coveredmethods="0"/>
         <line num="2" count="0" type="stmt"/>
         <line num="3" count="0" type="stmt"/>
         <line num="7" count="0" type="stmt"/>
@@ -332,14 +359,16 @@
         <line num="182" count="0" type="stmt"/>
         <line num="183" count="0" type="stmt"/>
         <line num="185" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="187" count="0" type="stmt"/>
-        <line num="191" count="0" type="stmt"/>
-        <line num="193" count="0" type="stmt"/>
+        <line num="186" count="0" type="stmt"/>
+        <line num="188" count="0" type="stmt"/>
+        <line num="192" count="0" type="stmt"/>
         <line num="194" count="0" type="stmt"/>
+        <line num="195" count="0" type="stmt"/>
         <line num="196" count="0" type="stmt"/>
-        <line num="200" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="253" count="0" type="stmt"/>
-        <line num="256" count="0" type="stmt"/>
+        <line num="198" count="0" type="stmt"/>
+        <line num="202" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="255" count="0" type="stmt"/>
+        <line num="258" count="0" type="stmt"/>
       </file>
     </package>
     <package name="components">

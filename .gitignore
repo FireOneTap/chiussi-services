@@ -6,3 +6,6 @@ build/
 .DS_Store
 *.sst
 *.node
+
+# Sentry Config File
+.env.sentry-build-plugin

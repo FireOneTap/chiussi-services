@@ -182,7 +182,8 @@ export default function TicketsPage() {
           const errorMessages = Object.values(result.errors).join('\n')
           setError(errorMessages)
         } else {
-          setError(result.error || 'Une erreur est survenue. Veuillez réessayer.')
+          const errorMsg = result.error || 'Une erreur est survenue. Veuillez réessayer.'
+          setError(errorMsg)
         }
         return
       }
@@ -190,8 +191,9 @@ export default function TicketsPage() {
       // Succès
       setIsSent(true)
     } catch (err) {
+      const errorMsg = 'Erreur de connexion. Veuillez vérifier votre connexion internet et réessayer.'
       console.error('Erreur:', err)
-      setError('Erreur de connexion. Veuillez vérifier votre connexion internet et réessayer.')
+      setError(errorMsg)
     } finally {
       setIsSending(false)
     }
